@@ -217,6 +217,60 @@ class Puppet::Util::Settings
         @used = []
     end
 
+    # NOTE: ACS ahh the util classes. . .sigh
+    # as part of a fix for 1183, I pulled the following 4 methods out of the puppetd executable and puppet.rb
+    # They probably deserve their own class, but I don't want to do that until I can refactor environments
+    # its a little better than where they were
+
+    # Prints the contents of a config file with the available config elements, or it
+    # prints a single value of a config element.
+    def print_config
+        env = value(:environment)
+        val = value(:configprint)
+        if val == "all"
+            hash = {}
+            each do |name, obj|
+                val = value(name,env) 
+                val = val.inspect if val == ""
+                hash[name] = val
+            end
+            hash.sort { |a,b| a[0].to_s <=> b[0].to_s }.each do |name, val|
+                puts "%s = %s" % [name, val]
+            end
+        else
+            val.split(/\s*,\s*/).sort.each do |v|
+                if include?(v)
+                    #if there is only one value, just print it for back compatibility
+                    if v == val
+                         puts value(val,env)
+                         break
+                    end
+                    puts "%s = %s" % [v, value(v,env)]
+                else
+                    puts "invalid parameter: %s" % v
+                    exit(1)
+                end
+            end
+        end
+        exit(0)
+    end
+
+    def generate_config
+        puts to_config
+        exit(0)
+    end
+
+    def generate_manifest
+        puts to_manifest
+        exit(0)
+    end
+
+    def check_print_configs
+        print_config if value(:configprint) != ""
+        generate_config if value(:genconfig)
+        generate_manifest if value(:genmanifest)
+    end
+
     # Return a given object's file metadata.
     def metadata(param)
         if obj = @config[symbolize(param)] and obj.is_a?(CFile)

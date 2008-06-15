@@ -171,8 +171,8 @@ end
 # Now parse the config
 Puppet.parse_config
 
-Puppet.genconfig
-Puppet.genmanifest
+# if :configprint, :genconfig or :genmanifest have a value, Puppet will exit
+Puppet.settings.check_print_configs
 
 begin
     ca = Puppet::SSLCertificates::CA.new()
