@@ -84,7 +84,7 @@ class Puppet::Util::Log
     def Log.close(dest = nil)
         if dest
             if @destinations.include?(dest)
-                if @destinations.respond_to?(:close)
+                if @destinations[dest].respond_to?(:close)
                     @destinations[dest].close
                 end
                 @destinations.delete(dest)
@@ -383,7 +383,7 @@ class Puppet::Util::Log
     # Create a new log destination.
     def Log.newdestination(dest)
         # Each destination can only occur once.
-        if @destinations.find { |name, obj| obj.name == dest }
+        if @destinations.find { |dest_key, obj| dest_key == dest}
             return
         end
 
@@ -391,9 +391,7 @@ class Puppet::Util::Log
             klass.match?(dest)
         end
 
-        unless type
-            raise Puppet::DevError, "Unknown destination type %s" % dest
-        end
+        raise Puppet::DevError, "Unknown destination type %s" % dest unless type
 
         begin
             if type.instance_method(:initialize).arity == 1
@@ -402,7 +400,7 @@ class Puppet::Util::Log
                 @destinations[dest] = type.new()
             end
         rescue => detail
-            if Puppet[:debug]
+            if Puppet[:trace]
                 puts detail.backtrace
             end
 
@@ -424,7 +422,7 @@ class Puppet::Util::Log
         end
 
         @destinations.each do |name, dest|
-            threadlock(dest) do
+            threadlock(dest.name) do
                 dest.handle(msg)
             end
         end

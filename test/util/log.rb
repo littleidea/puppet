@@ -221,7 +221,7 @@ class TestLog < Test::Unit::TestCase
             dest.match(:yayness)
         }
         assert(dest.match("Yayness"), "Did not match yayness")
-        Puppet::Util::Log.close(dest)
+        Puppet::Util::Log.close(:destine)
     end
 
     def test_autoflush
@@ -254,6 +254,7 @@ class TestLog < Test::Unit::TestCase
         Puppet.warning "A test"
         assert(File.read(file) =~ /A test/,
             "File did not flush")
+
         # Rename the file 
         newfile = file + ".old"
         File.rename(file, newfile)
