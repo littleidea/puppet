@@ -86,6 +86,8 @@ require 'puppet/sslcertificates'
 
 options = [
 	[ "--debug",	"-d",			GetoptLong::NO_ARGUMENT ],
+	[ "--profile",	"-p",			GetoptLong::NO_ARGUMENT],
+	[ "--profdir",  "-P",			GetoptLong::REQUIRED_ARGUMENT ],
 	[ "--help",		"-h",			GetoptLong::NO_ARGUMENT ],
 	[ "--logdest",	"-l",			GetoptLong::REQUIRED_ARGUMENT ],
 	[ "--nobucket",        			GetoptLong::NO_ARGUMENT ],
@@ -121,6 +123,11 @@ begin
             # if so, set it. NOTE: there is a catch-all at the bottom for defaults.rb
             when "--debug"
                 options[:debug] = true
+            when "--profile"
+                options[:profile] = true
+                require 'memory_profiler'
+            when "--profdir"
+                options[:profdir] = arg
             when "--help"
                 if Puppet.features.usage?
                     RDoc::usage && exit
@@ -277,6 +284,13 @@ Puppet.settraps
 
 if Puppet[:daemonize]
     server.daemonize
+end
+
+if options[:profile]
+    Puppet.notice "Profiling Memory..."
+    args = Hash.new
+    args[:logdir] = options[:profdir] ? options[:profdir] : "/tmp/memory_puppetmasterd"
+    MemoryProfiler.start(args)
 end
 
 Puppet.notice "Starting Puppet server version %s" % [Puppet.version]

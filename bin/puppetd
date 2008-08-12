@@ -170,6 +170,8 @@ options = [
 	[ "--centrallogging",			GetoptLong::NO_ARGUMENT ],
 	[ "--disable",	    			GetoptLong::NO_ARGUMENT ],
 	[ "--debug",	"-d",			GetoptLong::NO_ARGUMENT ],
+    [ "--profile",  "-p",           GetoptLong::NO_ARGUMENT],
+    [ "--profdir",  "-P",           GetoptLong::REQUIRED_ARGUMENT ],
 	[ "--enable",	    			GetoptLong::NO_ARGUMENT ],
 	[ "--fqdn",     "-f",			GetoptLong::REQUIRED_ARGUMENT ],
 	[ "--help",		"-h",			GetoptLong::NO_ARGUMENT ],
@@ -220,6 +222,11 @@ begin
                 end
             when "--enable"
                 options[:enable] = true
+            when "--profile"
+                options[:profile] = true
+                require 'memory_profiler'
+            when "--profdir"
+                options[:profdir] = arg
             when "--test"
                 options[:test] = true
             when "--centrallogging"
@@ -286,13 +293,14 @@ if options[:test]
 end
 
 # Handle the logging settings.
-if options[:debug] or options[:verbose]
+if options[:debug]
+    Puppet::Util::Log.level = :debug
+else
+    Puppet::Util::Log.level = :info
+end
+
+unless options[:daemonize]
     Puppet::Util::Log.newdestination(:console)
-    if options[:debug]
-        Puppet::Util::Log.level = :debug
-    else
-        Puppet::Util::Log.level = :info
-    end
 end
 
 unless options[:setdest]
@@ -342,6 +350,13 @@ server = nil
 # waitforcert happens.
 if Puppet[:daemonize]
     client.daemonize
+end
+
+if options[:profile]
+    Puppet.notice "Profiling Memory..."
+    args = Hash.new
+    args[:logdir] = options[:profdir] ? options[:profdir] : "/tmp/memory_puppetd"
+    MemoryProfiler.start(args)
 end
 
 unless Puppet::Executables::Client::CertHandler.new(options[:waitforcert], options[:onetime]).read_retrieve
