@@ -328,6 +328,7 @@ module Puppet
         },
         :masterport => [8140, "Which port puppetmasterd listens on."],
         :parseonly => [false, "Just check the syntax of the manifests."],
+        :profile_catalogs => [false, "Makes catalogs syncronous, counts object references and writes to /tmp"],
         :node_name => ["cert", "How the puppetmaster determines the client's identity 
            and sets the 'hostname', 'fqdn' and 'domain' facts for use in the manifest, 
            in particular for determining which 'node' statement applies to the client. 

@@ -62,7 +62,19 @@ class Puppet::Network::Handler
             # Pass the facts to the fact handler
             Puppet::Node::Facts.new(client, facts).save unless local?
 
-            catalog = Puppet::Node::Catalog.find(client)
+            catalog = nil
+            if Puppet[:profile_catalogs] 
+                Puppet.notice "Profiling find catalog"
+                require "puppet/sync_profiler"
+
+                @syncprofiler ||= SyncProfiler.new(:logdir => "/tmp/memory_puppetmaster", :logfile => "find_catalog.log")
+
+                @syncprofiler.profile(client) do
+                    catalog = Puppet::Node::Catalog.find(client)
+                end
+            else
+                catalog = Puppet::Node::Catalog.find(client)
+            end
 
             case format
             when "yaml":
