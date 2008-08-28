@@ -217,11 +217,15 @@ describe Puppet::Type.type(:file) do
 
             it "should use recurse_remote" do
                 @file.stubs(:recurse_local).returns []
-                @file.expects(:recurse_remote)
+                @file.expects(:recurse_remote).returns []
                 @file.recurse
             end
 
-            it "should create a new file resource for each remote file"
+            it "should create a new file resource for each remote file" do
+                @file.stubs(:recurse_local).returns []
+                @file.expects(:recurse_remote).returns [@metadata.new("/wtf", :relative_path => "a"), @metadata.new("/wtf", :relative_path => "b")]
+                @file.recurse.should == []
+            end
 
             it "should set the source for each new file resource"
 
@@ -254,7 +258,7 @@ describe Puppet::Type.type(:file) do
         it "should attempt to turn each found file into a child resource" do
             a = @metadata.new("/foo", :relative_path => "a")
             @file.expects(:recurse_local).returns [a]
-            @file.expects(:newchild).with("a")
+            @file.expects(:newchild).with("a", true)
 
             @file.recurse
         end
@@ -263,8 +267,8 @@ describe Puppet::Type.type(:file) do
             a = @metadata.new("/foo", :relative_path => "a")
             b = @metadata.new("/foo", :relative_path => "b")
             @file.expects(:recurse_local).returns [a, b]
-            @file.expects(:newchild).with("a").returns "A"
-            @file.expects(:newchild).with("b").returns nil
+            @file.expects(:newchild).with("a", true).returns "A"
+            @file.expects(:newchild).with("b", true).returns nil
 
             @file.recurse.should == ["A"]
         end

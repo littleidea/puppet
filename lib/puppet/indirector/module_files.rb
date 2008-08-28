@@ -42,6 +42,7 @@ class Puppet::Indirector::ModuleFiles < Puppet::Indirector::Terminus
 
     # Search for a list of files.
     def search(request)
+        puts 'Fucking Bloody Hell'
         return nil unless path = find_path(request)
         path2instances(request, path)
     end

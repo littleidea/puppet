@@ -19,6 +19,8 @@ module Puppet::FileServing::TerminusHelper
             hash[param] = false if hash[param] == "false"
             hash
         end
+
+        puts 'yipppeeee'
         Puppet::FileServing::Fileset.new(path, args).files.collect do |file|
             inst = model.new(path, :relative_path => file)
             inst.links = request.options[:links] if request.options[:links]

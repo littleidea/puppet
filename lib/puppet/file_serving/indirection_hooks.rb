@@ -14,7 +14,7 @@ module Puppet::FileServing::IndirectionHooks
     # Pick an appropriate terminus based on the protocol.
     def select_terminus(request)
         # We rely on the request's parsing of the URI.
-
+puts request.key
         # Short-circuit to :file if it's a fully-qualified path or specifies a 'file' protocol.
         return PROTOCOL_MAP["file"] if request.key =~ /^#{::File::SEPARATOR}/
         return PROTOCOL_MAP["file"] if request.protocol == "file"

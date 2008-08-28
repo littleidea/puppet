@@ -34,6 +34,7 @@ class Puppet::Indirector::FileServer < Puppet::Indirector::Terminus
     # Search for files.  This returns an array rather than a single
     # file.
     def search(request)
+        puts 'Did I even make it here ????'
         return nil unless path = find_path(request)
 
         path2instances(request, path)
@@ -52,6 +53,7 @@ class Puppet::Indirector::FileServer < Puppet::Indirector::Terminus
 
         return nil unless path = configuration.file_path(uri.path, :node => request.node)
 
+puts 'Where the fuck am I'
         return path
     end
 end

@@ -17,6 +17,7 @@ class Puppet::Indirector::FileMetadata::File < Puppet::Indirector::DirectFileSer
     end
 
     def search(request)
+        puts 'Mother fucker'
         return unless result = super
 
         result.each { |instance| instance.collect }
