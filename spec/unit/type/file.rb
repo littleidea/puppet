@@ -123,8 +123,11 @@ describe Puppet::Type.type(:file) do
     end
 
     it "should pass its path to the :perform_recursion method to do local recursion" do
-        @file.expects(:perform_recursion).with(@file[:path]).returns "foobar"
-        @file.recurse_local.should == "foobar"
+        meta = mock 'LocalMetadata'
+        meta.stubs(:reject).returns "foo"
+        @file.expects(:perform_recursion).with(@file[:path]).returns meta 
+        @file.stubs(:map_new_children).returns []
+        @file.recurse_local
     end
 
     it "should have a method for performing link recursion" do

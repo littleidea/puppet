@@ -611,6 +611,8 @@ module Puppet
             # a separate method or something, but the work is the same other
             # than this last bit, so it doesn't really make sense.
             if child = catalog.resource(:file, path)
+
+puts "made it inside *******************"
                 unless child.parent.object_id == self.object_id
                     self.debug "Not managing more explicit file %s" %
                         path
@@ -627,13 +629,16 @@ module Puppet
 
                         # behave idempotently
                         unless child.should(var) == value
+                            puts var
+                            puts value
                             child[var] = value
                         end
                     }
                 end
-                return nil
             else # create it anew
                 #notice "Creating new file with args %s" % args.inspect
+puts "not inside *******************"
+
                 args[:parent] = self
                 begin
                     # This method is used by subclasses of :file, so use the class name rather than hard-coding
@@ -648,7 +653,7 @@ module Puppet
             # LAK:FIXME This shouldn't be necessary, but as long as we're
             # modeling the relationship graph specifically, it is.
             catalog.relationship_graph.add_edge self, child
-
+puts "made it here *******************"
             return child
         end
 
@@ -721,25 +726,20 @@ module Puppet
             Puppet::FileServing::Metadata.search(path, :links => self[:links], :recurse => self[:recurse], :ignore => self[:ignore])
         end
 
-        def map_new_children(metadata_array, local)
-            p metadata_array
-            metadata_array.map { |metadata| newchild(metadata.relative_path, local) }.reject { |child| child.nil? }
-        end
-
         # Recurse into the directory.  This basically just calls 'localrecurse'
         # and maybe 'sourcerecurse', returning the collection of generated
         # files.
         def recurse
-            children = map_new_children(recurse_local, true)
+            children = recurse_local.map { |meta| newchild(meta.relative_path, true, :recurse => false)}
             
             if self[:target]
-                children += map_new_children(recurse_link, true)
+                children += recurse_link.map { |meta| newchild(meta.relative_path, true, :recurse => false)}
             end
 
             if self[:source]
                 source_data = recurse_remote
                 source = source_data.map { |data| data.path }
-                children += map_new_children(source_data, false)
+                children += source_data.map { |meta| newchild(meta.relative_path, false, :recurse => false, :source => meta.source)}
             end
 
             # The purge check needs to happen after all of the other recursion.
@@ -750,6 +750,9 @@ module Puppet
                     end
                 end
             end
+
+            children.each { |c| puts c.class }
+            
             children
         end
 
