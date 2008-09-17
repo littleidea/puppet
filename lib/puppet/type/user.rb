@@ -21,6 +21,9 @@ module Puppet
             "The provider can modify user passwords, by accepting a password
             hash."
 
+        feature :manages_solaris_rbac,
+            "The provider can manage roles and normal users"
+
         newproperty(:ensure, :parent => Puppet::Property::Ensure) do
             newvalue(:present, :event => :user_created) do
                 provider.create
@@ -28,6 +31,10 @@ module Puppet
 
             newvalue(:absent, :event => :user_removed) do
                 provider.delete
+            end
+
+            newvalue(:role, :event => :role_created, :required_features => :manages_solaris_rbac) do
+                provider.create_role
             end
 
             desc "The basic state that the object should be in."
@@ -53,12 +60,6 @@ module Puppet
             # The default 'sync' method only selects among a list of registered
             # values.
             def sync
-#                if self.insync?
-#                    self.info "already in sync"
-#                    return nil
-                #else
-                    #self.info "%s vs %s" % [self.is.inspect, self.should.inspect]
-#               end
                 unless self.class.values
                     self.devfail "No values defined for %s" %
                         self.class.name
