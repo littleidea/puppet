@@ -49,7 +49,8 @@ Puppet::Type.type(:user).provide :user_role_add, :parent => Puppet::Type::User::
     end
 
     def transition_to_user_cmd
-        cmd = [command(:role_modify)]
+        #note: this will really get the role command
+        cmd = [command(:modify)]
         cmd << "-K" << "type=normal"
         cmd << @resource[:name]
     end
