@@ -30,6 +30,10 @@ Puppet::Type.type(:user).provide :user_role_add, :parent => Puppet::Type::User::
         @user_attributes
     end
 
+    def flush
+        @user_attributes = nil
+    end
+
     def command(cmd)
         if is_role? or (!exists? and @resource[:ensure] == :role)
             cmd = ("role_" + cmd.to_s).intern
