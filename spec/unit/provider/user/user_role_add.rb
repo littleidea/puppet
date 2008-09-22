@@ -21,8 +21,10 @@ describe provider_class do
             @provider.stubs(:class).returns(klass)
         end
 
-        it "should use the command if not a role" do
+        it "should use the command if not a role and ensure!=role" do
             @provider.stubs(:is_role?).returns(false)
+            @provider.stubs(:exists?).returns(false)
+            @resource.stubs(:[]).with(:ensure).returns(:present)
             @provider.command(:foo).should == "userfoo"
         end
 
@@ -30,11 +32,18 @@ describe provider_class do
             @provider.stubs(:is_role?).returns(true)
             @provider.command(:foo).should == "rolefoo"
         end
+
+        it "should use the role command when !exists and ensure=role" do
+            @provider.stubs(:is_role?).returns(false)
+            @provider.stubs(:exists?).returns(false)
+            @resource.stubs(:[]).with(:ensure).returns(:role)
+            @provider.command(:foo).should == "rolefoo"
+        end
     end
 
     describe "when calling transition_to_user_cmd" do
         it "should return rolemod setting the type to normal" do
-            @provider.expects(:command).with(:role_modify).returns("rolemod")
+            @provider.expects(:command).with(:modify).returns("rolemod")
             @provider.transition_to_user_cmd.should == ["rolemod", "-K", "type=normal", "fakeval"]
         end
     end

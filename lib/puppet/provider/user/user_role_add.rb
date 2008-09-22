@@ -31,7 +31,9 @@ Puppet::Type.type(:user).provide :user_role_add, :parent => Puppet::Type::User::
     end
 
     def command(cmd)
-        cmd = ("role_" + cmd.to_s).intern if is_role?
+        if is_role? or (!exists? and @resource[:ensure] == :role)
+            cmd = ("role_" + cmd.to_s).intern
+        end
         super(cmd)
     end
 
