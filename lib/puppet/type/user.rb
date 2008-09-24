@@ -1,5 +1,6 @@
 require 'etc'
 require 'facter'
+require 'puppet/property/list'
 
 module Puppet
     newtype(:user) do
@@ -173,73 +174,41 @@ module Puppet
             end
         end
 
-        newproperty(:groups) do
+        newproperty(:groups, :parent => Puppet::Property::List) do
             desc "The groups of which the user is a member.  The primary
                 group should not be listed.  Multiple groups should be
                 specified as an array."
-
-            def should_to_s(newvalue)
-                self.should
-            end
-
-            def is_to_s(currentvalue)
-                currentvalue.join(",")
-            end
-
-            # We need to override this because the groups need to
-            # be joined with commas
-            def should
-                current_value = retrieve
-
-                unless defined? @should and @should
-                    return nil
-                end
-
-                if @resource[:membership] == :inclusive
-                    return @should.sort.join(",")
-                else
-                    members = @should
-                    if current_value.is_a?(Array)
-                        members += current_value
-                    end
-                    return members.uniq.sort.join(",")
-                end
-            end
-
-            def retrieve
-                if tmp = provider.groups and tmp != :absent
-                    return tmp.split(",")
-                else
-                    return :absent
-                end
-            end
-
-            def insync?(is)
-                unless defined? @should and @should
-                    return true
-                end
-                unless defined? is and is
-                    return true
-                end
-                tmp = is
-                if is.is_a? Array
-                    tmp = is.sort.join(",")
-                end
-
-                return tmp == self.should
-            end
 
             validate do |value|
                 if value =~ /^\d+$/
                     raise ArgumentError, "Group names must be provided, not numbers"
                 end
                 if value.include?(",")
+                    puts value
                     raise ArgumentError, "Group names must be provided as an array, not a comma-separated list"
                 end
             end
         end
 
-        # these three properties are all implemented differently on each platform,
+        newproperty(:roles, :parent => Puppet::Property::List, :required_features => :manages_solaris_rbac) do
+            desc "The roles of which the user the user has.  The roles should be
+                specified as an array."
+
+            def membership
+                :role_membership
+            end
+
+            validate do |value|
+                if value =~ /^\d+$/
+                    raise ArgumentError, "Role names must be provided, not numbers"
+                end
+                if value.include?(",")
+                    raise ArgumentError, "Role names must be provided as an array, not a comma-separated list"
+                end
+            end
+        end
+
+      # these three properties are all implemented differently on each platform,
         # so i'm disabling them for now
 
         # FIXME Puppet::Property::UserLocked is currently non-functional
@@ -271,6 +240,16 @@ module Puppet
 
         newparam(:membership) do
             desc "Whether specified groups should be treated as the only groups
+                of which the user is a member or whether they should merely
+                be treated as the minimum membership list."
+                
+            newvalues(:inclusive, :minimum)
+
+            defaultto :minimum
+        end
+
+        newparam(:role_membership) do
+            desc "Whether specified roles should be treated as the only roles 
                 of which the user is a member or whether they should merely
                 be treated as the minimum membership list."
                 

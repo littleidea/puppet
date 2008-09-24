@@ -141,4 +141,18 @@ describe provider_class do
             @provider.uid = 150
         end
     end
+
+    describe "when getting roles" do
+        it "should get the user_attributes" do
+            @provider.expects(:user_attributes)
+            @provider.roles
+        end
+
+        it "should get the :roles attribute" do
+            attributes = mock("attributes")
+            attributes.expects(:[]).with(:roles)
+            @provider.stubs(:user_attributes).returns(attributes)
+            @provider.roles
+        end
+    end
 end
