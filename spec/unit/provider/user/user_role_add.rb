@@ -118,7 +118,7 @@ describe provider_class do
             @provider.expects(:run)
             @provider.create_role
        end
-       
+
        it "should log to info if the role exists" do
             @provider.stubs(:exists?).returns(true)
             @provider.stubs(:is_role?).returns(true)
@@ -127,7 +127,7 @@ describe provider_class do
        end
    end
 
-    describe "when allow duplicate is enabled" do 
+    describe "when allow duplicate is enabled" do
         before do
             @resource.expects(:allowdupe?).returns true
             @provider.expects(:execute).with { |args| args.include?("-o") }
@@ -136,9 +136,23 @@ describe provider_class do
         it "should add -o when the user is being created" do
             @provider.create
         end
-    
+
         it "should add -o when the uid is being modified" do
             @provider.uid = 150
+        end
+    end
+
+    describe "when getting roles" do
+        it "should get the user_attributes" do
+            @provider.expects(:user_attributes)
+            @provider.roles
+        end
+
+        it "should get the :roles attribute" do
+            attributes = mock("attributes")
+            attributes.expects(:[]).with(:roles)
+            @provider.stubs(:user_attributes).returns(attributes)
+            @provider.roles
         end
     end
 end

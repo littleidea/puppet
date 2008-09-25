@@ -10,6 +10,7 @@ Puppet::Type.type(:user).provide :user_role_add, :parent => Puppet::Type::User::
     options :home, :flag => "-d", :method => :dir
     options :comment, :method => :gecos
     options :groups, :flag => "-G"
+    options :roles, :flag => "-R"
 
     verify :gid, "GID must be an integer" do |value|
         value.is_a? Integer
@@ -27,7 +28,6 @@ Puppet::Type.type(:user).provide :user_role_add, :parent => Puppet::Type::User::
 
     def user_attributes
         @user_attributes ||= UserAttr.get_attributes_by_name(@resource[:name])
-        @user_attributes
     end
 
     def flush
@@ -81,7 +81,7 @@ Puppet::Type.type(:user).provide :user_role_add, :parent => Puppet::Type::User::
         if exists?
             run(deletecmd, "delete "+ (is_role? ? "role" : "user"))
         else
-            info "already absent" 
+            info "already absent"
         end
     end
 
@@ -92,6 +92,12 @@ Puppet::Type.type(:user).provide :user_role_add, :parent => Puppet::Type::User::
             run(transition_to_role_cmd, "transition user to")
         else
             info "role already exists"
+        end
+    end
+
+    def roles
+        if user_attributes
+            user_attributes[:roles]
         end
     end
 end

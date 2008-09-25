@@ -34,3 +34,7 @@ Spec::Runner.configure do |config|
 #      teardown() if respond_to? :teardown
 #  end
 end
+
+class Object
+    alias :must :should
+end
