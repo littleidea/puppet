@@ -2,7 +2,7 @@ require 'puppet/util/user_attr'
 
 Puppet::Type.type(:user).provide :user_role_add, :parent => Puppet::Type::User::ProviderUseradd do
 
-    desc "User management inherits ``useradd`` and adds logic to manage roles on Solaris using roleadd." 
+    desc "User management inherits ``useradd`` and adds logic to manage roles on Solaris using roleadd."
 
     defaultfor :operatingsystem => :solaris
 
@@ -68,30 +68,22 @@ Puppet::Type.type(:user).provide :user_role_add, :parent => Puppet::Type::User::
     end
 
     def create
-        if !exists?
-            run(addcmd, "create")
-        elsif is_role?
+        if is_role?
             run(transition_to_user_cmd, "transition role to")
         else
-            info "already exists"
+            run(addcmd, "create")
         end
     end
 
     def destroy
-        if exists?
-            run(deletecmd, "delete "+ (is_role? ? "role" : "user"))
-        else
-            info "already absent"
-        end
+        run(deletecmd, "delete "+ (is_role? ? "role" : "user"))
     end
 
     def create_role
-        if !exists?
-            run(addcmd, "create role")
-        elsif !is_role?
+        if exists? and !is_role?
             run(transition_to_role_cmd, "transition user to")
         else
-            info "role already exists"
+            run(addcmd, "create role")
         end
     end
 

@@ -242,17 +242,17 @@ module Puppet
             desc "Whether specified groups should be treated as the only groups
                 of which the user is a member or whether they should merely
                 be treated as the minimum membership list."
-                
+
             newvalues(:inclusive, :minimum)
 
             defaultto :minimum
         end
 
         newparam(:role_membership) do
-            desc "Whether specified roles should be treated as the only roles 
+            desc "Whether specified roles should be treated as the only roles
                 of which the user is a member or whether they should merely
                 be treated as the minimum membership list."
-                
+
             newvalues(:inclusive, :minimum)
 
             defaultto :minimum

@@ -70,13 +70,6 @@ describe provider_class do
             @provider.expects(:run)
             @provider.create
         end
-
-        it "should log to info when the user exists and is not a role" do
-            @provider.stubs(:exists?).returns(true)
-            @provider.stubs(:is_role?).returns(false)
-            @provider.expects(:info).with("already exists")
-            @provider.create
-        end
     end
 
    describe "when calling destroy" do
@@ -95,12 +88,6 @@ describe provider_class do
             @provider.expects(:run)
             @provider.destroy
        end
-
-       it "should log to info if the user doesn't exist" do
-            @provider.stubs(:exists?).returns(false)
-            @provider.expects(:info).with("already absent")
-            @provider.destroy
-       end
    end
 
    describe "when calling create_role" do
@@ -112,17 +99,10 @@ describe provider_class do
             @provider.create_role
        end
 
-       it "should use the add command role doesn't exists" do
+       it "should use the add command when role doesn't exists" do
             @provider.stubs(:exists?).returns(false)
             @provider.expects(:addcmd)
             @provider.expects(:run)
-            @provider.create_role
-       end
-
-       it "should log to info if the role exists" do
-            @provider.stubs(:exists?).returns(true)
-            @provider.stubs(:is_role?).returns(true)
-            @provider.expects(:info).with("role already exists")
             @provider.create_role
        end
    end

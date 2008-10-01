@@ -35,7 +35,7 @@ module Puppet
 
                 members = @should
                 #inclusive means we are managing everything so if it isn't in should, its gone
-                if ! inclusive? 
+                if ! inclusive?
                     members = add_should_with_current(members, retrieve)
                 end
 

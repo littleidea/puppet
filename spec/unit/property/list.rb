@@ -6,7 +6,7 @@ require 'puppet/property/list'
 
 list_class = Puppet::Property::List
 
-describe list_class do 
+describe list_class do
 
     it "should be a subclass of Property" do
         list_class.superclass.must == Puppet::Property
@@ -25,7 +25,7 @@ describe list_class do
         end
 
         it "should have a :membership as default membership" do
-            @property.membership.should == :membership 
+            @property.membership.should == :membership
         end
 
         it "should return the same value passed into should_to_s" do

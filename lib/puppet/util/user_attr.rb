@@ -2,7 +2,7 @@ class UserAttr
     def self.get_attributes_by_name(name)
         attributes = nil
 
-        File.open('/etc/user_attr').each do |line|
+        File.readlines('/etc/user_attr').each do |line|
             next if line =~ /^#/
 
             token = line.split(':')
