@@ -54,22 +54,15 @@ Puppet::Type.type(:user).provide :user_role_add, :parent => Puppet::Type::User::
         end
     end
 
-    def transition_to_user_cmd
-        #note: this will really get the role command
+    def transition(type)
         cmd = [command(:modify)]
-        cmd << "-K" << "type=normal"
-        cmd << @resource[:name]
-    end
-
-    def transition_to_role_cmd
-        cmd = [command(:modify)]
-        cmd << "-K" << "type=role"
+        cmd << "-K" << "type=#{type}"
         cmd << @resource[:name]
     end
 
     def create
         if is_role?
-            run(transition_to_user_cmd, "transition role to")
+            run(transition("normal"), "transition role to")
         else
             run(addcmd, "create")
         end
@@ -81,7 +74,7 @@ Puppet::Type.type(:user).provide :user_role_add, :parent => Puppet::Type::User::
 
     def create_role
         if exists? and !is_role?
-            run(transition_to_role_cmd, "transition user to")
+            run(transition("role"), "transition user to")
         else
             run(addcmd, "create role")
         end

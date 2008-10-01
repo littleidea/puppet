@@ -41,17 +41,10 @@ describe provider_class do
         end
     end
 
-    describe "when calling transition_to_user_cmd" do
-        it "should return rolemod setting the type to normal" do
-            @provider.expects(:command).with(:modify).returns("rolemod")
-            @provider.transition_to_user_cmd.should == ["rolemod", "-K", "type=normal", "fakeval"]
-        end
-    end
-
-    describe "when calling transition_to_role_cmd" do
-        it "should return usermod setting the type to role" do
-            @provider.expects(:command).with(:modify).returns("usermod")
-            @provider.transition_to_role_cmd.should == ["usermod", "-K", "type=role", "fakeval"]
+    describe "when calling transition" do
+        it "should return foomod setting the type to bar" do
+            @provider.expects(:command).with(:modify).returns("foomod")
+            @provider.transition("bar").should == ["foomod", "-K", "type=bar", "fakeval"]
         end
     end
 
@@ -63,10 +56,10 @@ describe provider_class do
             @provider.create
         end
 
-        it "should use transition_to_user_cmd when the user is a role" do
+        it "should use transition(normal) when the user is a role" do
             @provider.stubs(:exists?).returns(true)
             @provider.stubs(:is_role?).returns(true)
-            @provider.expects(:transition_to_user_cmd)
+            @provider.expects(:transition).with("normal")
             @provider.expects(:run)
             @provider.create
         end
@@ -91,10 +84,10 @@ describe provider_class do
    end
 
    describe "when calling create_role" do
-       it "should use the transition_to_role_cmd if the user exists" do
+       it "should use the transition(role) if the user exists" do
             @provider.stubs(:exists?).returns(true)
             @provider.stubs(:is_role?).returns(false)
-            @provider.expects(:transition_to_role_cmd)
+            @provider.expects(:transition).with("role")
             @provider.expects(:run)
             @provider.create_role
        end
