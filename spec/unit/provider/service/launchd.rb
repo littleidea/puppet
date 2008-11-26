@@ -51,12 +51,17 @@ describe provider_class do
         @provider.should respond_to(:disable)
     end
     
+    it "should have a status method" do
+        @provider.should respond_to(:status)
+    end
     
-    # describe "when checking status" do
-    #     it "should execute launchctl list" do
-    #         @provider.expects(:launchctl).with(:list).returns(:stopped)
-    #         @provider.status
-    #     end
-    # end
+    
+    describe "when checking status" do
+        it "should execute launchctl list" do
+            @provider.stubs(:plist_from_label).returns([@joblabel, 1])
+            @provider.expects(:launchctl).with(:list).returns(:stopped)
+            @provider.status
+        end
+    end
     
  end
