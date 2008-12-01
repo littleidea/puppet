@@ -1,48 +1,35 @@
 module Puppet
     newtype(:zpool) do
-        @doc = "Manage users.  This type is mostly built to manage system
-            users, so it is lacking some features useful for managing normal
-            users.
+        @doc = "Manage zpools. Create and delete zpools. The provider WILL NOT SYNC, only report differences.
 
-            This resource type uses the prescribed native tools for creating
-            groups and generally uses POSIX APIs for retrieving information
-            about them.  It does not directly modify /etc/passwd or anything."
+                Supports vdevs with mirrors, raidz, logs and spares."
 
-        newproperty(:ensure, :parent => Puppet::Property::Ensure) do
-            desc "Whether zpool should exist or not."
-            newvalue(:present, :event => :pool_created) do
-                provider.create
-            end
-
-            newvalue(:absent, :event => :pool_removed) do
-                provider.delete
-            end
-
-            defaultto do
-                if @resource.managed?
-                    :present
-                else
-                    nil
-                end
-            end
-        end
+        ensurable
 
         newproperty(:disk, :array_matching => :all) do
-            desc "The disk(s) for this pool."
+            desc "The disk(s) for this pool. Can be an array or space separated string"
         end
 
         newproperty(:mirror, :array_matching => :all) do
-            desc "An array of arrays which list of all the devices to mirror for this pool."
+            desc "List of all the devices to mirror for this pool. Each mirror should be a space separated string.
+                  mirror => [\"disk1 disk2\", \"disk3 disk4\"]"
 
             validate do |value|
                 if value.include?(",")
-                    raise ArgumentError, "Group names must be provided as an array, not a comma-separated list"
+                    raise ArgumentError, "mirror names must be provided as string separated, not a comma-separated list"
                 end
             end
         end
 
         newproperty(:raidz, :array_matching => :all) do
-            desc "An array of arrays which list of all the devices to raid for this pool."
+            desc "List of all the devices to raid for this pool. Should be an array of space separated strings.
+                  raidz => [\"disk1 disk2\", \"disk3 disk4\"]"
+
+            validate do |value|
+                if value.include?(",")
+                    raise ArgumentError, "raid names must be provided as string separated, not a comma-separated list"
+                end
+            end
         end
 
         newproperty(:spare, :array_matching => :all) do
@@ -50,16 +37,16 @@ module Puppet
         end
 
         newproperty(:log, :array_matching => :all) do
-            desc "A disk for this pool. (doesn't support mirroring yet)"
+            desc "Log disks for this pool. (doesn't support mirroring yet)"
         end
 
         newparam(:pool) do
-            desc "The name for this pool"
+            desc "The name for this pool."
             isnamevar
        end
 
         newparam(:raid_parity) do
-            desc "determines parity if using zraid property"
+            desc "Determines parity when using raidz property."
         end
 
         validate do

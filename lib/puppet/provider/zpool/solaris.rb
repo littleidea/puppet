@@ -4,45 +4,31 @@ Puppet::Type.type(:zpool).provide(:solaris) do
     commands :zpool => "/usr/sbin/zpool"
     defaultfor :operatingsystem => :solaris
 
-    attr_reader :current_pool
-
-    def create_multi_array(name, array)
-        array = array.join(' ').split("#{name} ")
-        array.shift
-        array.collect { |a| a.strip }
-    end
-
     def process_zpool_data(pool_array)
         if pool_array == []
             return Hash.new(:absent)
         end
         #get the name and get rid of it
-        pool = { :pool => pool_array[0] }
+        pool = Hash.new([])
+        pool[:pool] = pool_array[0]
         pool_array.shift
 
-        #spares and logs will get the values and take them out of the array
-        #order matters here and there are side effects on pool array :(
-        if pool_array.include?("spares")
-            pool[:spare] = pool_array.slice!(pool_array.index("spares")+1..pool_array.length-1)
-            pool_array.pop
-        end
+        #order matters here :(
+        tmp = []
 
-        if pool_array.include?("logs")
-            pool[:log] = pool_array.slice!(pool_array.index("logs")+1..pool_array.length-1)
-            pool_array.pop
-        end
-
-        #all that should be left is the vdev data
-        case pool_array[0]
-            when "mirror"
-                pool[:mirror] = create_multi_array("mirror", pool_array)
-            when "raidz1"
-                pool[:raidz] = create_multi_array("raidz1", pool_array)
-            when "raidz2"
-                pool[:raidz] = create_multi_array("raidz2", pool_array)
-                pool[:raid_parity] = "raidz2"
+        pool_array.reverse.each_with_index do |value, i|
+            case value
+            when "spares": pool[:spare] = tmp.reverse and tmp.clear
+            when "logs": pool[:log] = tmp.reverse and tmp.clear
+            when "mirror", "raidz1", "raidz2":
+                sym = value == "mirror" ? :mirror : :raidz
+                pool[sym].unshift(tmp.reverse.join(' '))
+                pool[:raid_parity] = "raidz2" if value == "raidz2"
+                tmp.clear
             else
-                pool[:disk] = pool_array
+                tmp << value
+                pool[:disk] = tmp.reverse if i == 0
+            end
         end
 
         pool
@@ -55,8 +41,14 @@ Puppet::Type.type(:zpool).provide(:solaris) do
         zpool_data
     end
 
-    def get_instance
-        @current_pool = process_zpool_data(get_pool_data)
+    def current_pool
+        unless (defined?(@current_pool) and @current_pool)
+            @current_pool = process_zpool_data(get_pool_data)
+        end
+    end
+
+    def flush
+        @current_pool= nil
     end
 
     #Adds log and spare
@@ -89,12 +81,8 @@ Puppet::Type.type(:zpool).provide(:solaris) do
         end
     end
 
-    def build_create_cmd
-        [:create, @resource[:pool]] + build_vdevs + build_named("spare") + build_named("log")
-    end
-
     def create
-        zpool(*build_create_cmd)
+        zpool(*([:create, @resource[:pool]] + build_vdevs + build_named("spare") + build_named("log")))
     end
 
     def delete
@@ -102,7 +90,6 @@ Puppet::Type.type(:zpool).provide(:solaris) do
     end
 
     def exists?
-        get_instance
         if current_pool[:pool] == :absent
             false
         else
@@ -116,7 +103,7 @@ Puppet::Type.type(:zpool).provide(:solaris) do
         end
 
         define_method(field.to_s + "=") do |should|
-            Puppet.warning "zpool %s does not match, should be '%s' currently is '%s'" % [field, should, current_pool[field]]
+            Puppet.warning "NO CHANGES BEING MADE: zpool %s does not match, should be '%s' currently is '%s'" % [field, should, current_pool[field]]
         end
     end
 
