@@ -30,16 +30,16 @@ describe provider_class do
             @provider.create
         end
 
-        it "should call zfs with create and this zfs (when there are no properties)" do
-            @provider.expects(:zfs).with(:create, @resource[:zfs])
-            @provider.stubs(:add_properties).returns([])
+        it "should call zfs with create, properties and this zfs" do
+            @provider.stubs(:add_properties).returns(%w{a b})
+            @provider.expects(:zfs).with(:create, "a", "b", @resource[:name])
             @provider.create
         end
     end
 
     describe "when calling delete" do
         it "should call zfs with :destroy and this zfs" do
-            @provider.expects(:zfs).with(:destroy, @resource[:zfs])
+            @provider.expects(:zfs).with(:destroy, @resource[:name])
             @provider.delete
         end
     end
@@ -52,7 +52,7 @@ describe provider_class do
         end
         
         it "should return true if returned values match the name" do 
-            @provider.stubs(:zfs).with(:list).returns("NAME USED AVAIL REFER MOUNTPOINT\n#{@resource[:zfs]} 100K 27.4M /myzfs")
+            @provider.stubs(:zfs).with(:list).returns("NAME USED AVAIL REFER MOUNTPOINT\n#{@resource[:name]} 100K 27.4M /myzfs")
             @provider.exists?.should == true
         end
 
@@ -66,19 +66,19 @@ describe provider_class do
     [:mountpoint, :compression, :copies, :quota, :reservation, :sharenfs, :snapdir].each do |prop|
         describe "when getting the #{prop} value" do
             it "should call zfs with :get, #{prop} and this zfs" do
-                @provider.expects(:zfs).with(:get, prop, @resource[:zfs]).returns("NAME PROPERTY VALUE SOURCE\nmyzfs name value blah")
+                @provider.expects(:zfs).with(:get, prop, @resource[:name]).returns("NAME PROPERTY VALUE SOURCE\nmyzfs name value blah")
                 @provider.send(prop)
             end
 
             it "should get the third value of the second line from the output" do
-                @provider.stubs(:zfs).with(:get, prop, @resource[:zfs]).returns("NAME PROPERTY VALUE SOURCE\nmyzfs name value blah")
+                @provider.stubs(:zfs).with(:get, prop, @resource[:name]).returns("NAME PROPERTY VALUE SOURCE\nmyzfs name value blah")
                 @provider.send(prop).should == "value"
             end
         end
 
         describe "when setting the #{prop} value" do
             it "should call zfs with :set, #{prop}=value and this zfs" do
-                @provider.expects(:zfs).with(:set, "#{prop}=value", @resource[:zfs])
+                @provider.expects(:zfs).with(:set, "#{prop}=value", @resource[:name])
                 @provider.send("#{prop}=".intern, "value")
             end
         end

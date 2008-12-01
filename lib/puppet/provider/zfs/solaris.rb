@@ -24,15 +24,15 @@ Puppet::Type.type(:zfs).provide(:solaris) do
     end
 
     def create
-        zfs(*([:create] + add_properties + [@resource[:zfs]]))
+        zfs *([:create] + add_properties + [@resource[:name]])
     end
 
     def delete
-        zfs(:destroy, @resource[:zfs])
+        zfs(:destroy, @resource[:name])
     end
 
     def exists?
-        if zfs(:list).split("\n").detect { |line| line.split("\s")[0] == @resource[:zfs] }
+        if zfs(:list).split("\n").detect { |line| line.split("\s")[0] == @resource[:name] }
             true
         else
             false
@@ -44,11 +44,11 @@ Puppet::Type.type(:zfs).provide(:solaris) do
             #special knowledge of format
             #the command returns values in this format with the header
             #NAME PROPERTY VALUE SOURCE
-            arrayify_second_line_on_whitespace(zfs(:get, field, @resource[:zfs]))[2]
+            arrayify_second_line_on_whitespace(zfs(:get, field, @resource[:name]))[2]
         end
 
         define_method(field.to_s + "=") do |should|
-            zfs(:set, "#{field}=#{should}", @resource[:zfs])
+            zfs(:set, "#{field}=#{should}", @resource[:name])
         end
     end
 

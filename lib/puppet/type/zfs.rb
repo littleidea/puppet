@@ -4,9 +4,8 @@ module Puppet
 
         ensurable
 
-        newparam(:zfs) do
+        newparam(:name) do
             desc "The full name for this filesystem. (including the zpool)"
-            isnamevar
         end
 
         newproperty(:mountpoint) do
@@ -39,7 +38,7 @@ module Puppet
 
         autorequire(:zpool) do
             #strip the zpool off the zfs name and autorequire it
-            [@parameters[:zfs].value.split('/')[0]]
+            [@resource[:name].split('/')[0]]
         end
     end
 end

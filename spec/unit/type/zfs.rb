@@ -18,7 +18,7 @@ describe zpool do
         end
     end
 
-    parameters = [:zfs]
+    parameters = [:name]
 
     parameters.each do |parameter|
         it "should have a %s parameter" % parameter do
