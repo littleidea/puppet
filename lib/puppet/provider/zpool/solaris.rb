@@ -45,6 +45,7 @@ Puppet::Type.type(:zpool).provide(:solaris) do
         unless (defined?(@current_pool) and @current_pool)
             @current_pool = process_zpool_data(get_pool_data)
         end
+        @current_pool
     end
 
     def flush
