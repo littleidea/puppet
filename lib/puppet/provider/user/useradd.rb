@@ -37,13 +37,24 @@ Puppet::Type.type(:user).provide :useradd, :parent => Puppet::Provider::NameServ
         cmd
     end
 
+    def filter_property(property)
+        value = @resource.should(property)
+
+        if value == '' or value == :absent
+            value = nil
+        end
+
+        value
+    end
+
     def add_properties
         cmd = []
         Puppet::Type.type(:user).validproperties.each do |property|
             next if property == :ensure
             # the value needs to be quoted, mostly because -c might
             # have spaces in it
-            if value = @resource.should(property) and value != ""
+            value = filter_property(property)
+            if value
                 cmd << flag(property) << value
             end
         end

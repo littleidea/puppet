@@ -67,6 +67,28 @@ describe provider_class do
         end
     end
 
+    describe "when filtering properties" do
+        it "should return nil if the property is nil" do
+            @resource.stubs(:should).with(:foo).returns nil
+            @provider.filter_property(:foo).must == nil
+        end
+
+        it "should return nil if the property is ''" do
+            @resource.stubs(:should).with(:foo).returns ''
+            @provider.filter_property(:foo).must == nil
+        end
+
+        it "should return nil if the property is :absent" do
+            @resource.stubs(:should).with(:foo).returns :absent
+            @provider.filter_property(:foo).must == nil
+        end
+
+        it "should return any other string value" do
+            @resource.stubs(:should).with(:foo).returns "bar,baz"
+            @provider.filter_property(:foo).must == "bar,baz"
+        end
+    end
+
     describe "when adding properties" do
         it "should get the valid properties"
         it "should not add the ensure property"

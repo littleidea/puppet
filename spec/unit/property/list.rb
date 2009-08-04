@@ -28,8 +28,12 @@ describe list_class do
             @property.membership.should == :membership
         end
 
-        it "should return the same value passed into should_to_s" do
+        it "should return the same String value passed into should_to_s" do
             @property.should_to_s("foo") == "foo"
+        end
+
+        it "should return the String value of :absent passed into should_to_s" do
+            @property.should_to_s(:absent) == "absent"
         end
 
         it "should return the passed in array values joined with the delimiter from is_to_s" do
@@ -91,6 +95,13 @@ describe list_class do
                 @property.expects(:retrieve).returns(["foo","baz"])
                 @property.should.must == "bar,baz,foo"
             end
+
+            it "should return :absent when should == []" do
+                @property.should = []
+                @property.expects(:inclusive?).returns(true)
+                @property.should.must == :absent
+            end
+
         end
 
         describe "when calling retrieve" do
@@ -135,16 +146,28 @@ describe list_class do
                 @property.insync?("bar")
             end
 
-            it "should return true if prepared value == should value" do
-                @property.should = "bar,foo"
+            it "should return true if should value == is value" do
+                @property.should = ["bar","foo"]
                 @property.expects(:inclusive?).returns(true)
                 @property.insync?(["bar","foo"]).must == true
             end
 
-            it "should return false if prepared value != should value" do
-                @property.should = "bar,baz,foo"
+            it "should return true if should value == is value in different order" do
+                @property.should = ["foo","bar"]
+                @property.expects(:inclusive?).returns(true)
+                @property.insync?(["bar","foo"]).must == true
+            end
+
+            it "should return false if should value != is value" do
+                @property.should = ["bar","baz","foo"]
                 @property.expects(:inclusive?).returns(true)
                 @property.insync?(["bar","foo"]).must == false
+            end
+
+            it "should return true if is value = :absent and should value = []" do
+                @property.should = []
+                @property.expects(:inclusive?).returns(true)
+                @property.insync?(:absent).must == true
             end
         end
 

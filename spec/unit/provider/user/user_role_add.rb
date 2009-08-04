@@ -155,6 +155,15 @@ describe provider_class do
     end
 
     describe "when adding properties" do
+        it "should call filter_property with valid properties" do
+            @provider.stubs(:filter_property)
+            @provider.expects(:filter_property).with(:keys)
+            @resource.stubs(:should).returns ""
+            @resource.stubs(:should).with(:keys)
+            @provider.stubs(:build_keys_cmd).returns([])
+            @provider.add_properties
+        end
+
         it "should call build_keys_cmd" do
             @resource.stubs(:should).returns ""
             @resource.expects(:should).with(:keys).returns({ :foo => "bar" })

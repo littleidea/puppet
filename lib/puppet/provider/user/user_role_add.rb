@@ -33,7 +33,8 @@ Puppet::Type.type(:user).provide :user_role_add, :parent => :useradd do
             # 1680 Now you can set the hashed passwords on solaris:lib/puppet/provider/user/user_role_add.rb
             # the value needs to be quoted, mostly because -c might
             # have spaces in it
-            if value = @resource.should(property) and value != ""
+            value = filter_property(property)
+            if value
                 if property == :keys
                     cmd += build_keys_cmd(value)
                 else

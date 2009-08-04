@@ -5,8 +5,7 @@ module Puppet
         class List < Property
 
             def should_to_s(should_value)
-                #just return the should value
-                should_value
+                should_value.to_s
             end
 
             def is_to_s(currentvalue)
@@ -48,7 +47,13 @@ module Puppet
                     members = add_should_with_current(members, retrieve)
                 end
 
-                dearrayify(members)
+                members = dearrayify(members)
+
+                if members == ''
+                    :absent
+                else
+                    members
+                end
             end
 
             def delimiter

@@ -238,11 +238,7 @@ module Puppet
                 }
             end
 
-            if obj = @parameters[:groups] and groups = obj.should
-                autos += groups.split(",")
-            end
-
-            autos
+            autos += get_requires_list_from_property(:groups)
         end
 
         def retrieve
@@ -284,13 +280,7 @@ module Puppet
 
         #autorequire the roles that the user has
         autorequire(:user) do
-            reqs = []
-
-            if roles_property = @parameters[:roles] and roles = roles_property.should
-                reqs += roles.split(',')
-            end
-
-            reqs
+            get_requires_list_from_property(:roles)
         end
 
         newparam(:role_membership) do
@@ -386,6 +376,15 @@ module Puppet
         newproperty(:project, :required_features => :manages_solaris_rbac) do
             desc "The name of the project associated with a user"
         end
+
+        def get_requires_list_from_property(property)
+            reqs = []
+            if list_property = @parameters[property] and list = list_property.should and list != :absent
+                reqs = list.split(',')
+            end
+            reqs
+        end
+
     end
 end
 
