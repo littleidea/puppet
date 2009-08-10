@@ -118,14 +118,29 @@ describe list_class do
             end
         end
 
+        describe "when calling prepare_is_for_comparison" do
+            it "should return '' when called with :absent" do
+                @property.prepare_is_for_comparison(:absent).must == ''
+            end
+
+            it "should call dearrayify" do
+                @property.expects(:dearrayify)
+                @property.prepare_is_for_comparison(:absent)
+            end
+
+            it "should return a sorted, comma delimited string when called with Array" do
+                 @property.prepare_is_for_comparison(["foo","bar"]).must == "bar,foo"
+            end
+        end
+
         describe "when calling insync?" do
             it "should return true unless @should is defined and not nil" do
-                @property.insync?("foo") == true
+                @property.insync?("foo").must == true
             end
 
             it "should return true unless the passed in values is not nil" do
                 @property.should = "foo"
-                @property.insync?(nil) == true
+                @property.insync?(nil).must == true
             end
 
             it "should call prepare_is_for_comparison with value passed in and should" do
